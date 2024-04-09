@@ -40,6 +40,7 @@ eval $(minikube docker-env)
 ```
 
 ## Build and push Docker image
+You may need to log in to the registry and tag the image accordingly before push
 ```
 docker build -t auth-app .
 docker push auth-app:latest
@@ -53,6 +54,10 @@ docker run -d --name auth-app-container -p 90:80 auth-app
 You can view the Swagger doc at `http://localhost:90/docs`
 
 # Spin up Kubernetes cluster locally
+If you have not, please start minikube
+```
+minikube start
+```
 ## Deploy to Kubernetes
 ```
 kubectl apply -f auth-deployment.yaml

@@ -19,6 +19,7 @@ pip install -r requirements.txt
 ## Start/Restart FastAPI Server
 ```
 cd src/employee
+export PYTHONPATH="<path to project root>/src:$PYTHONPATH"
 uvicorn employee:app --reload
 ```
 
@@ -45,6 +46,7 @@ eval $(minikube docker-env)
 ```
 
 ## Build and push Docker image
+You may need to log in to the registry and tag the image accordingly before push
 ```
 docker build -t employee-app .
 docker push employee-app:latest
@@ -58,6 +60,10 @@ docker run -d --name employee-app-container -p 80:80 employee-app
 You can view the Swagger doc at `http://localhost:80/docs`
 
 # Spin up Kubernetes cluster locally
+If you have not, please start minikube
+```
+minikube start
+```
 ## Deploy to Kubernetes
 ```
 kubectl apply -f employee-deployment.yaml
@@ -89,7 +95,7 @@ The command will return a url like: `http://127.0.0.1:61186`
 As a validation, see Swagger doc at `http://127.0.0.1:61186/docs`
 
 
-# Integration test
+# Test
 ## Postman
 We could leverage Postman for manual test/exploration and automated integration test
 

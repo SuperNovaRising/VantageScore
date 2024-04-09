@@ -18,6 +18,10 @@ helm install my-postgres bitnami/postgresql -f custom.yaml
 ```
 
 # Spin up Kubernetes cluster locally
+If you have not, please start minikube
+```
+minikube start
+```
 ## Use k9s to examine the pod and instances
 ```
 k9s
