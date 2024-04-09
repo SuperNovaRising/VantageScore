@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import psycopg2
 from datetime import datetime, timedelta
-import jwt
+from jwt import decode, encode, PyJWTError
 import os
 from typing import Optional
 
@@ -26,7 +26,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -34,7 +34,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         if user is None:
             raise credentials_exception
         return User(username=user[0], hashed_password=user[1])
-    except jwt.PyJWTError:
+    except PyJWTError:
         raise credentials_exception
 
 async def get_current_active_admin(current_user: User = Depends(get_current_user)) -> User:
@@ -56,8 +56,9 @@ def get_user(username):
             database="users",  
             user="root",
             password="password", # TODO: Move this to kubernetes secrets
-            #   running on kubernetes, docker container
-            host=os.getenv("DB_HOST", "host.docker.internal"),
+            #   running on kubernetes, uvicorn locally
+            # Unfortunately, I have trouble having Docker container to resolve the localhost correctly
+            host=os.getenv("DB_HOST", "localhost"),
             port="5432"
         )
         cursor = connection.cursor()
@@ -85,7 +86,7 @@ def write_to_userdb(user: User):
             user="root",
             password="password",
             #   running on kubernetes, docker container
-            host=os.getenv("DB_HOST", "host.docker.internal"),
+            host=os.getenv("DB_HOST", "localhost"),
             port="5432"
         )
         cursor = connection.cursor()
@@ -107,7 +108,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 @app.post("/signup/")
